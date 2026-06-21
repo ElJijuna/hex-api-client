@@ -1,6 +1,6 @@
 {
   "name": "hex-api-client",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "TypeScript client for the Hex.pm package registry API",
   "homepage": "https://github.com/ElJijuna/hex-api-client#readme",
   "bugs": {
