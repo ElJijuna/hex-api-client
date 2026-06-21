@@ -56,6 +56,7 @@ export class PackageResource {
       undefined,
       signal,
     );
+
     return pkg.releases.map((r) => r.version);
   }
 
@@ -93,6 +94,7 @@ export class PackageResource {
       undefined,
       signal,
     );
+
     return pkg.latest_stable_version;
   }
 }

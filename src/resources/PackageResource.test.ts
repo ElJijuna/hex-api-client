@@ -1,6 +1,7 @@
 import { HexApiError, HexClient } from '../index';
 
 const mockFetch = jest.fn();
+
 global.fetch = mockFetch;
 
 function mockResponse<T>(data: T, status = 200): void {
@@ -51,7 +52,6 @@ const packageFixture = {
     },
   ],
 };
-
 const releaseFixture = {
   version: '1.7.10',
   url: 'https://hex.pm/api/packages/phoenix/releases/1.7.10',
@@ -84,14 +84,17 @@ describe('PackageResource', () => {
     it('fetches package by name from GET /packages/:name', async () => {
       mockResponse(packageFixture);
       const pkg = await hex.package('phoenix').get();
+
       expect(pkg.name).toBe('phoenix');
       const url = mockFetch.mock.calls[0][0] as string;
+
       expect(url).toContain('/packages/phoenix');
     });
 
     it('returns the full HexPackage shape', async () => {
       mockResponse(packageFixture);
       const pkg = await hex.package('phoenix').get();
+
       expect(pkg.meta.licenses).toContain('MIT');
       expect(pkg.releases).toHaveLength(3);
     });
@@ -109,6 +112,7 @@ describe('PackageResource', () => {
     it('passes AbortSignal to fetch', async () => {
       mockResponse(packageFixture);
       const controller = new AbortController();
+
       await hex.package('phoenix').get(controller.signal);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -121,6 +125,7 @@ describe('PackageResource', () => {
     it('returns array of version strings from releases array', async () => {
       mockResponse(packageFixture);
       const versions = await hex.package('phoenix').versions();
+
       expect(versions).toEqual(['1.6.0', '1.7.0', '1.7.10']);
     });
 
@@ -128,6 +133,7 @@ describe('PackageResource', () => {
       mockResponse(packageFixture);
       await hex.package('phoenix').versions();
       const url = mockFetch.mock.calls[0][0] as string;
+
       expect(url).toContain('/packages/phoenix');
       expect(url).not.toContain('/releases');
     });
@@ -145,6 +151,7 @@ describe('PackageResource', () => {
     it('passes AbortSignal to fetch', async () => {
       mockResponse(packageFixture);
       const controller = new AbortController();
+
       await hex.package('phoenix').versions(controller.signal);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -157,14 +164,17 @@ describe('PackageResource', () => {
     it('fetches specific release from GET /packages/:name/releases/:version', async () => {
       mockResponse(releaseFixture);
       const release = await hex.package('phoenix').release('1.7.10');
+
       expect(release.version).toBe('1.7.10');
       const url = mockFetch.mock.calls[0][0] as string;
+
       expect(url).toContain('/packages/phoenix/releases/1.7.10');
     });
 
     it('returns the full HexRelease shape', async () => {
       mockResponse(releaseFixture);
       const release = await hex.package('phoenix').release('1.7.10');
+
       expect(release.checksum).toBe('abc123');
       expect(release.publisher?.username).toBe('chrismccord');
       expect(release.retirement).toBeNull();
@@ -174,6 +184,7 @@ describe('PackageResource', () => {
     it('handles null publisher', async () => {
       mockResponse({ ...releaseFixture, publisher: null });
       const release = await hex.package('phoenix').release('1.7.10');
+
       expect(release.publisher).toBeNull();
     });
 
@@ -183,6 +194,7 @@ describe('PackageResource', () => {
         retirement: { reason: 'security', message: 'Use 1.7.11 instead' },
       });
       const release = await hex.package('phoenix').release('1.7.10');
+
       expect(release.retirement?.reason).toBe('security');
     });
 
@@ -199,6 +211,7 @@ describe('PackageResource', () => {
     it('passes AbortSignal to fetch', async () => {
       mockResponse(releaseFixture);
       const controller = new AbortController();
+
       await hex.package('phoenix').release('1.7.10', controller.signal);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -211,18 +224,21 @@ describe('PackageResource', () => {
     it('returns latest_stable_version from package data', async () => {
       mockResponse(packageFixture);
       const version = await hex.package('phoenix').latestStable();
+
       expect(version).toBe('1.7.10');
     });
 
     it('returns null when no stable version exists', async () => {
       mockResponse({ ...packageFixture, latest_stable_version: null });
       const version = await hex.package('phoenix').latestStable();
+
       expect(version).toBeNull();
     });
 
     it('passes AbortSignal to fetch', async () => {
       mockResponse(packageFixture);
       const controller = new AbortController();
+
       await hex.package('phoenix').latestStable(controller.signal);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),

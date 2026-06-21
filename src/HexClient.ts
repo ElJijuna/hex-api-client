@@ -65,8 +65,10 @@ export class HexClient {
 
   on<K extends keyof HexClientEvents>(event: K, callback: HexClientEvents[K]): this {
     const cbs = this.listeners.get(event) ?? [];
+
     cbs.push(callback);
     this.listeners.set(event, cbs);
+
     return this;
   }
 
@@ -75,6 +77,7 @@ export class HexClient {
     payload: Parameters<HexClientEvents[K]>[0],
   ): void {
     const cbs = this.listeners.get(event) ?? [];
+
     for (const cb of cbs) {
       (cb as (p: typeof payload) => void)(payload);
     }
@@ -89,17 +92,23 @@ export class HexClient {
   ): Promise<T> {
     const url = buildUrl(`${this.baseUrl}${path}`, params);
     const startedAt = new Date();
+
     let statusCode: number | undefined;
+
     try {
       const response = await fetch(url, {
         headers: { Accept: 'application/json' },
         signal,
       });
+
       statusCode = response.status;
+
       if (!response.ok) {
         throw new HexApiError(response.status, response.statusText);
       }
+
       const data = (await response.json()) as T;
+
       this.emit('request', {
         url,
         method: 'GET',
@@ -108,9 +117,11 @@ export class HexClient {
         durationMs: Date.now() - startedAt.getTime(),
         statusCode,
       });
+
       return data;
     } catch (err) {
       const finishedAt = new Date();
+
       this.emit('request', {
         url,
         method: 'GET',
@@ -120,6 +131,7 @@ export class HexClient {
         statusCode,
         error: err instanceof Error ? err : new Error(String(err)),
       });
+
       throw err;
     }
   }
@@ -174,10 +186,14 @@ function buildUrl(base: string, params?: Record<string, string | number | boolea
   if (!params) {
     return base;
   }
+
   const entries = Object.entries(params).filter(([, v]) => v !== undefined);
+
   if (entries.length === 0) {
     return base;
   }
+
   const search = new URLSearchParams(entries.map(([k, v]) => [k, String(v)]));
+
   return `${base}?${search.toString()}`;
 }
